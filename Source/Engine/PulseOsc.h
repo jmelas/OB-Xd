@@ -2,7 +2,7 @@
     ==============================================================================
     This file is part of Obxd synthesizer.
 
-    Copyright � 2013-2014 Filatov Vadim
+    Copyright © 2013-2014 Filatov Vadim
 
     Contact author via email :
     justdat_@_e1.ru
@@ -22,89 +22,51 @@
     ==============================================================================
  */
 #pragma once
-#include "SynthEngine.h"
+
 #include "BlepData.h"
+
 class PulseOsc
 {
-    DelayLine<Samples> del1;
-    bool pw1t;
-    float buffer1[Samples * 2];
-    const int hsam;
-    const int n;
-    float const * blepPTR;
-    int bP1;
+    static constexpr int N = Samples * 2;
+    static constexpr int MASK = N - 1;
+
 public:
-    PulseOsc() : hsam(Samples)
-        , n(Samples * 2)
+    void setDecimation() { blepPTR = blepd2; }
+    void removeDecimation() { blepPTR = blep; }
+
+    float tick(float x, float pulseWidth)
     {
-    //	del1 = new DelayLine(hsam);
-        pw1t = false;
-        bP1 = 0;
-        //buffer1= new float[n];
-        for (int i = 0; i < n; i++)
-            buffer1[i] = 0;
-        blepPTR = blep;
+        const float v = x >= pulseWidth ? 1 - (0.5 - pulseWidth) - 0.5
+                                             : -(0.5 - pulseWidth) - 0.5;
+        return delay.tick(v) - getNextBlep();
     }
-    ~PulseOsc()
-    {
-    //	delete buffer1;
-    //	delete del1;
-    }
-    inline void setDecimation()
-    {
-        blepPTR = blepd2;
-    }
-    inline void removeDecimation()
-    {
-        blepPTR = blep;
-    }
-    inline float aliasReduction()
-    {
-        return -getNextBlep(buffer1, bP1);
-    }
-    inline void processMaster(float x, float delta, float pulseWidth, float pulseWidthWas)
+
+    void processMaster(float x, float delta, float pulseWidth, float pulseWidthWas)
     {
         float summated = delta - (pulseWidth - pulseWidthWas);
         if ((pw1t) && x >= 1.0f)
         {
             x -= 1.0f;
             if (pw1t)
-                mixInImpulseCenter(buffer1, bP1, x / delta, 1);
+                applyBLEP(x / delta, 1);
             pw1t = false;
         }
         if ((!pw1t) && (x >= pulseWidth) && (x - summated <= pulseWidth))
         {
             pw1t = true;
             float frac = (x - pulseWidth) / summated;
-            mixInImpulseCenter(buffer1, bP1, frac, -1);
+            applyBLEP(frac, -1);
         }
         if ((pw1t) && x >= 1.0f)
         {
             x -= 1.0f;
             if (pw1t)
-                mixInImpulseCenter(buffer1, bP1, x / delta, 1);
+                applyBLEP(x / delta, 1);
             pw1t = false;
         }
     }
-    inline float getValue(float x, float pulseWidth)
-    {
-        float oscmix;
-        if (x >= pulseWidth)
-            oscmix = 1 - (0.5 - pulseWidth) - 0.5;
-        else
-            oscmix = -(0.5 - pulseWidth) - 0.5;
-        return del1.feedReturn(oscmix);
-    }
-    inline float getValueFast(float x, float pulseWidth)
-    {
-        float oscmix;
-        if (x >= pulseWidth)
-            oscmix = 1 - (0.5 - pulseWidth) - 0.5;
-        else
-            oscmix = -(0.5 - pulseWidth) - 0.5;
-        return oscmix;
-    }
-    inline void processSlave(float x, float delta, bool hardSyncReset, float hardSyncFrac, float pulseWidth, float pulseWidthWas)
+
+    void processSlave(float x, float delta, bool hardSyncReset, float hardSyncFrac, float pulseWidth, float pulseWidthWas)
     {
         float summated = delta - (pulseWidth - pulseWidthWas);
 
@@ -114,7 +76,7 @@ public:
             if (((!hardSyncReset) || (x / delta > hardSyncFrac)))//de morgan processed equation
             {
                 if (pw1t)
-                    mixInImpulseCenter(buffer1, bP1, x / delta, 1);
+                    applyBLEP(x / delta, 1);
                 pw1t = false;
             }
             else
@@ -130,21 +92,21 @@ public:
             if (((!hardSyncReset) || (frac > hardSyncFrac)))//de morgan processed equation
             {
                 //transition to 1
-                mixInImpulseCenter(buffer1, bP1, frac, -1);
+                applyBLEP(frac, -1);
             }
             else
             {
-                //if transition do not ocurred
+                //if transition did not occur
                 pw1t = false;
             }
         }
         if ((pw1t) && x >= 1.0f)
         {
             x -= 1.0f;
-            if (((!hardSyncReset) || (x / delta > hardSyncFrac)))//de morgan processed equation
+            if (((!hardSyncReset) || (x / delta > hardSyncFrac))) //de morgan processed equation
             {
                 if (pw1t)
-                    mixInImpulseCenter(buffer1, bP1, x / delta, 1);
+                    applyBLEP(x / delta, 1);
                 pw1t = false;
             }
             else
@@ -156,36 +118,45 @@ public:
         if (hardSyncReset)
         {
             //float fracMaster = (delta * hardSyncFrac);
-            float trans = (pw1t ? 1 : 0);
-            mixInImpulseCenter(buffer1, bP1, hardSyncFrac, trans);
+            const float trans = (pw1t ? 1 : 0);
+            applyBLEP(hardSyncFrac, trans);
             pw1t = false;
         }
     }
-    inline void mixInImpulseCenter(float * buf, int & bpos, float offset, float scale)
-    {
-        int lpIn = (int) (B_OVERSAMPLING * (offset));
-        float frac = offset * B_OVERSAMPLING - lpIn;
-        float f1 = 1.0f - frac;
-        for (int i = 0; i < Samples; i++)
-        {
-            float mixvalue = (blepPTR[lpIn] * f1 + blepPTR[lpIn + 1] * (frac));
-            buf[(bpos + i) & (n - 1)] += mixvalue * scale;
-            lpIn += B_OVERSAMPLING;
-        }
-        for (int i = Samples; i < n; i++)
-        {
-            float mixvalue = (blepPTR[lpIn] * f1 + blepPTR[lpIn + 1] * (frac));
-            buf[(bpos + i) & (n - 1)] -= mixvalue * scale;
-            lpIn += B_OVERSAMPLING;
-        }
-    }
-    inline float getNextBlep(float * buf, int & bpos)
-    {
-        buf[bpos] = 0.0f;
-        bpos++;
 
-        // Wrap pos
-        bpos &= (n - 1);
-        return buf[bpos];
+private:
+    void applyBLEP(const float offset, const float scale)
+    {
+        int lpIn = B_OVERSAMPLING * offset;
+        const float frac = offset * B_OVERSAMPLING - lpIn;
+        const float f1 = 1.0f - frac;
+        for (int i = 0; i < Samples; ++i)
+        {
+            const float mixvalue = blepPTR[lpIn] * f1 + blepPTR[lpIn + 1] * frac;
+            blepBuffer[(blepPos + i) & MASK] += mixvalue * scale;
+            lpIn += B_OVERSAMPLING;
+        }
+        for (int i = Samples; i < N; ++i)
+        {
+            const float mixvalue = blepPTR[lpIn] * f1 + blepPTR[lpIn + 1] * frac;
+            blepBuffer[(blepPos + i) & MASK] -= mixvalue * scale;
+            lpIn += B_OVERSAMPLING;
+        }
     }
+
+    float getNextBlep()
+    {
+        blepBuffer[blepPos] = 0.0f;
+
+        ++blepPos;
+        blepPos &= MASK;
+
+        return blepBuffer[blepPos];
+    }
+
+    DelayLine<float, Samples> delay;
+    std::array<float, N> blepBuffer {};
+    float const * blepPTR = blep;
+    int blepPos = 0;
+    bool pw1t = false;
 };

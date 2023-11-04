@@ -113,7 +113,7 @@ public:
 
     bool fourpole;
 
-    DelayLine<Samples * 2> lenvd, fenvd, lfod;
+    DelayLine<float, Samples * 2> lenvd, fenvd, lfod;
 
     ApInterpolator ap;
     float oscpsw;
@@ -182,7 +182,7 @@ public:
         float ptNote = tptlpupw(prtst, tunedMidiNote - 81, porta * (1 + PortaDetune * PortaDetuneAmt), sampleRateInv);
         osc.notePlaying = ptNote;
         //both envelopes and filter cv need a delay equal to osc internal delay
-        float lfoDelayed = lfod.feedReturn(lfoIn);
+        float lfoDelayed = lfod.tick(lfoIn);
         //filter envelope undelayed
         float envm = fenv.processSample() * (1 - (1 - velocityValue) * vflt);
         if (invertFenv)
@@ -193,14 +193,14 @@ public:
                 (lfof ? lfoDelayed * lfoa1 : 0) +
                 cutoff +
                 FltDetune * FltDetAmt +
-                fenvamt * fenvd.feedReturn(envm) +
+                fenvamt * fenvd.tick(envm) +
                 -45 + (fltKF * (ptNote + 40))
             )
             //noisy filter cutoff
             + (ng.nextFloat() - 0.5f) * 3.5f
             , (flt.SampleRate * 0.5f - 120.0f));//for numerical stability purposes
 
-        //limit our max cutoff on self osc to prevent alising
+        //limit our max cutoff on self osc to prevent aliasing
         if (selfOscPush)
             cutoffcalc = jmin(cutoffcalc, 19000.0f);
 
@@ -213,7 +213,7 @@ public:
         osc.pto2 = (pitchWheel * pitchWheelAmt) + (lfoo2 ? lfoIn * lfoa1 : 0) + (envpitchmod * envm) + lfoVibratoIn;
 
         //variable sort magic - upsample trick
-        float envVal = lenvd.feedReturn(env.processSample() * (1 - (1 - velocityValue) * vamp));
+        float envVal = lenvd.tick(env.processSample() * (1 - (1 - velocityValue) * vamp));
 
         float oscps = osc.ProcessSample() * (1 - levelDetuneAmt * levelDetune);
 
@@ -225,7 +225,7 @@ public:
             x1 = flt.Apply4Pole(x1, (cutoffcalc));
         else
             x1 = flt.Apply(x1, (cutoffcalc));
-        x1 *= (envVal);
+        x1 *= envVal;
         return x1;
     }
     void setBrightness(float val)
@@ -241,13 +241,9 @@ public:
     void setHQ(bool hq)
     {
         if (hq)
-        {
             osc.setDecimation();
-        }
         else
-        {
             osc.removeDecimation();
-        }
     }
     void setSampleRate(float sr)
     {
@@ -274,8 +270,8 @@ public:
         {
             //When your processing is paused we need to clear delay lines and envelopes
             //Not doing this will cause clicks or glitches
-            lenvd.fillZeroes();
-            fenvd.fillZeroes();
+            lenvd.clear();
+            fenvd.clear();
             ResetEnvelope();
         }
         shouldProcessed = true;

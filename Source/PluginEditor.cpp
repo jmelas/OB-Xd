@@ -14,7 +14,6 @@ It contains the basic startup code for a Juce application.
 // #include "GUI/BinaryData.h"
 #include "Utils.h"
 
-
 //==============================================================================
 ObxdAudioProcessorEditor::ObxdAudioProcessorEditor (ObxdAudioProcessor& ownerFilter)
 	: AudioProcessorEditor (&ownerFilter), ScalableComponent(&ownerFilter), processor (ownerFilter),
@@ -32,7 +31,7 @@ ObxdAudioProcessorEditor::ObxdAudioProcessorEditor (ObxdAudioProcessor& ownerFil
     //lf.setColour(PopupMenu::backgroundColourId, Colour(20, 20, 20));
     //lf.setColour(PopupMenu::textColourId, Colour(245, 245, 245));
     //lf.setColour(PopupMenu::highlightedBackgroundColourId, Colour(60, 60, 60));
-    
+
     //skinFolder = ownerFilter.getCurrentSkinFolder();  // initialized above
     commandManager.registerAllCommandsForTarget(this);
     commandManager.setFirstCommandTarget(this);
@@ -48,19 +47,19 @@ ObxdAudioProcessorEditor::ObxdAudioProcessorEditor (ObxdAudioProcessor& ownerFil
     // KeyPressMappingSet, which will use them to invoke the appropriate commands.
     //addKeyListener(commandManager.getKeyMappings());
     getTopLevelComponent()->addKeyListener (commandManager.getKeyMappings());
-    
+
     //Timer::callAfterDelay (100, [this] { this->grabKeyboardFocus(); }); // ensure that key presses are sent to the KeyPressTarget object
-    
+
     if (PluginHostType().isProTools()) { } else { startTimer(100); }; // Fix ProTools file dialog focus issues
 
 	//startTimer(100); // This will fix the issue
-    
+
     DBG("W: " <<getWidth() << " H:" << getHeight());
 
     loadSkin (processor);
 
     updateFromHost();
-    
+
     switch(processor.gui_size)
     {
         case 1:
@@ -75,21 +74,18 @@ ObxdAudioProcessorEditor::ObxdAudioProcessorEditor (ObxdAudioProcessor& ownerFil
     }
     repaint();
     scaleFactorChanged();
-    
 }
-
 
 void ObxdAudioProcessorEditor::resized() {
     if (setPresetNameWindow != nullptr )
     {
         if (auto wrapper = dynamic_cast<ObxdAudioProcessorEditor*>(processor.getActiveEditor()))
         {
-            
             auto w = proportionOfWidth(0.25f);
             auto h = proportionOfHeight(0.3f);
             auto x = proportionOfWidth(0.5f) - (w / 2);
             auto y = wrapper->getY();
-            
+
             if (setPresetNameWindow != nullptr)
             {
                 y += proportionOfHeight(0.15f);
@@ -97,8 +93,7 @@ void ObxdAudioProcessorEditor::resized() {
             }
         }
     }
-    
-    
+
     skinFolder = processor.getCurrentSkinFolder();
     File coords = skinFolder.getChildFile ("coords.xml");
     if (!coords.existsAsFile()) {
@@ -170,9 +165,9 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
         rebuildComponents (processor);
         return;
     }
-    
+
     //if (coords.createInputStream())
-    
+
     XmlDocument skin (coords);
     auto doc = skin.getDocumentElement();
     if (!doc) {
@@ -182,7 +177,6 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
     else {
         int xScreen = getWidth(), yScreen = getHeight();
         if (doc->getTagName() == "PROPERTIES"){
-           
             forEachXmlChildElementWithTagName(*doc, child, "VALUE"){
                 if (child->hasAttribute("NAME") && child->hasAttribute("x") && child->hasAttribute("y")) {
                     String name = child->getStringAttribute("NAME");
@@ -191,8 +185,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                     int d = child->getIntAttribute("d");
                     int w = child->getIntAttribute("w");
                     int h = child->getIntAttribute("h");
-                    
-                    
+
                     if (name == "resonanceKnob"){
                         resonanceKnob = addKnob (x, y, d, ownerFilter, RESONANCE, "Resonance", 0);
                         mappingComps["resonanceKnob"] = resonanceKnob;
@@ -209,7 +202,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         multimodeKnob = addKnob (x, y, d, ownerFilter, MULTIMODE, "Multimode", 0.5);
                         mappingComps["multimodeKnob"] = multimodeKnob;
                     }
-                    
+
                     if (name == "volumeKnob"){
                         volumeKnob = addKnob (x, y, d, ownerFilter, VOLUME, "Volume", 0.4);
                         mappingComps["volumeKnob"] = volumeKnob;
@@ -256,7 +249,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         };
                         mappingComps["osc2PitchKnob"] = osc2PitchKnob;
                     }
-                    
+
                     if (name == "osc1MixKnob"){
                         osc1MixKnob = addKnob (x, y, d, ownerFilter, OSC1MIX, "Osc1", 1);
                         mappingComps["osc1MixKnob"] = osc1MixKnob;
@@ -269,7 +262,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         noiseMixKnob = addKnob (x, y, d, ownerFilter, NOISEMIX, "Noise", 0);
                         mappingComps["noiseMixKnob"] = noiseMixKnob;
                     }
-                    
+
                     if (name == "xmodKnob"){
                         xmodKnob = addKnob (x, y, d, ownerFilter, XMOD, "Xmod", 0);
                         mappingComps["xmodKnob"] = xmodKnob;
@@ -278,7 +271,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         osc2DetuneKnob = addKnob (x, y, d, ownerFilter, OSC2_DET, "Detune", 0);
                         mappingComps["osc2DetuneKnob"] = osc2DetuneKnob;
                     }
-                    
+
                     if (name == "envPitchModKnob"){
                         envPitchModKnob = addKnob (x, y, d, ownerFilter, ENVPITCH, "PEnv", 0);
                         mappingComps["envPitchModKnob"] = envPitchModKnob;
@@ -287,7 +280,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         brightnessKnob = addKnob (x, y, d, ownerFilter, BRIGHTNESS, "Bri", 1);
                         mappingComps["brightnessKnob"] = brightnessKnob;
                     }
-                    
+
                     if (name == "attackKnob"){
                         attackKnob = addKnob (x, y, d, ownerFilter, LATK, "Atk", 0);
                         mappingComps["attackKnob"] = attackKnob;
@@ -303,7 +296,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         releaseKnob = addKnob (x, y, d, ownerFilter, LREL, "Rel", 0);
                         mappingComps["releaseKnob"] = releaseKnob;
                     }
-                    
+
                     if (name == "fattackKnob"){
                         fattackKnob = addKnob (x, y, d, ownerFilter, FATK, "Atk", 0);
                         mappingComps["fattackKnob"] = fattackKnob;
@@ -320,7 +313,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         freleaseKnob = addKnob (x, y, d, ownerFilter, FREL, "Rel", 0);
                         mappingComps["freleaseKnob"] = freleaseKnob;
                     }
-                    
+
                     if (name == "lfoFrequencyKnob"){
                         lfoFrequencyKnob = addKnob (x, y, d, ownerFilter, LFOFREQ, "Freq", 0);
                         mappingComps["lfoFrequencyKnob"] = lfoFrequencyKnob;
@@ -333,7 +326,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         lfoAmt2Knob = addKnob (x, y, d, ownerFilter, LFO2AMT, "PWM", 0);
                         mappingComps["lfoAmt2Knob"] = lfoAmt2Knob;
                     }
-                    
+
                     if (name == "lfoSinButton"){
                         lfoSinButton = addButton (x, y, w, h, ownerFilter, LFOSINWAVE, "Sin");
                         mappingComps["lfoSinButton"] = lfoSinButton;
@@ -346,7 +339,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         lfoSHButton = addButton (x, y,  w, h, ownerFilter, LFOSHWAVE, "S&H");
                         mappingComps["lfoSHButton"] = lfoSHButton;
                     }
-                    
+
                     if (name == "lfoOsc1Button"){
                         lfoOsc1Button = addButton (x, y,  w, h, ownerFilter, LFOOSC1, "Osc1");
                         mappingComps["lfoOsc1Button"] = lfoOsc1Button;
@@ -359,17 +352,16 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         lfoFilterButton = addButton (x, y,  w, h, ownerFilter, LFOFILTER, "Filt");
                         mappingComps["lfoFilterButton"] = lfoFilterButton;
                     }
-                    
+
                     if (name == "lfoPwm1Button"){
                         lfoPwm1Button = addButton (x, y,  w, h, ownerFilter, LFOPW1, "Osc1");
                         mappingComps["lfoPwm1Button"] = lfoPwm1Button;
-
                     }
                     if (name == "lfoPwm2Button"){
                         lfoPwm2Button = addButton (x, y,  w, h, ownerFilter, LFOPW2, "Osc2");
                         mappingComps["lfoPwm2Button"] = lfoPwm2Button;
                     }
-                    
+
                     if (name == "hardSyncButton"){
                         hardSyncButton = addButton (x, y,  w, h, ownerFilter, OSC2HS, "Sync");
                         mappingComps["hardSyncButton"] = hardSyncButton;
@@ -382,7 +374,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         osc2SawButton = addButton (x, y,  w, h, ownerFilter, OSC2Saw, "S");
                         mappingComps["osc2SawButton"] = osc2SawButton;
                     }
-                    
+
                     if (name == "osc1PulButton"){
                         osc1PulButton = addButton (x, y,  w, h, ownerFilter, OSC1Pul, "P");
                         mappingComps["osc1PulButton"] = osc1PulButton;
@@ -391,7 +383,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         osc2PulButton = addButton (x, y,  w, h, ownerFilter, OSC2Pul, "P");
                         mappingComps["osc2PulButton"] = osc2PulButton;
                     }
-                    
+
                     if (name == "pitchQuantButton"){
                         pitchQuantButton =  addButton (x, y,  w, h, ownerFilter, OSCQuantize, "Step");
                         pitchQuantButton->onStateChange = [&]
@@ -413,11 +405,10 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                             };
                             configureOscKnob("osc1PitchKnob");
                             configureOscKnob("osc2PitchKnob");
-                            
                         };
                         mappingComps["pitchQuantButton"] = pitchQuantButton;
                     }
-                    
+
                     if (name == "filterBPBlendButton"){
                         filterBPBlendButton = addButton (x, y,  w, h, ownerFilter, BANDPASS, "Bp");
                         mappingComps["filterBPBlendButton"] = filterBPBlendButton;
@@ -430,7 +421,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         filterHQButton = addButton (x, y,  w, h, ownerFilter, FILTER_WARM, "HQ");
                         mappingComps["filterHQButton"] = filterHQButton;
                     }
-                    
+
                     if (name == "filterKeyFollowButton"){
                         filterKeyFollowButton =  addButton (x, y,  w, h, ownerFilter, FLT_KF, "Key");
                         mappingComps["filterKeyFollowButton"] = filterKeyFollowButton;
@@ -439,7 +430,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         unisonButton = addButton (x, y,  w, h, ownerFilter, UNISON, "Uni");
                         mappingComps["unisonButton"] = unisonButton;
                     }
-                    
+
                     if (name == "tuneKnob"){
                         tuneKnob = addKnob (x, y, d, ownerFilter, TUNE, "Tune", 0.5);
                         mappingComps["tuneKnob"] = tuneKnob;
@@ -448,12 +439,12 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         transposeKnob = addKnob (x, y, d, ownerFilter, OCTAVE, "Transpose", 0.5);
                         mappingComps["transposeKnob"] = transposeKnob;
                     }
-                    
+
                     if (name == "voiceDetuneKnob"){
                         voiceDetuneKnob =addKnob (x, y, d, ownerFilter, UDET, "VoiceDet", 0);
                         mappingComps["voiceDetuneKnob"] = voiceDetuneKnob;
                     }
-                    
+
                     if (name == "bendLfoRateKnob"){
                         bendLfoRateKnob = addKnob (x, y, d, ownerFilter, BENDLFORATE, "ModRate", 0.4);
                         mappingComps["bendLfoRateKnob"] = bendLfoRateKnob;
@@ -474,7 +465,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         midiUnlearnButton = addButton (x, y,  w, h, ownerFilter, UNLEARN, "UNL");
                         mappingComps["midiUnlearnButton"] = midiUnlearnButton;
                     }
-                    
+
                     if (name == "pan1Knob"){
                         pan1Knob = addKnob (x, y, d, ownerFilter, PAN1, "1", 0.5);
                         pan1Knob->resetOnShiftClick(true, Action::panReset);
@@ -499,7 +490,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         pan4Knob->addActionListener(this);
                         mappingComps["pan4Knob"] = pan4Knob;
                     }
-                    
+
                     if (name == "pan5Knob"){
                         pan5Knob = addKnob (x, y, d, ownerFilter, PAN5, "5", 0.5);
                         pan5Knob->resetOnShiftClick(true, Action::panReset);
@@ -524,7 +515,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         pan8Knob->addActionListener(this);
                         mappingComps["pan8Knob"] = pan8Knob;
                     }
-                    
+
                     if (name == "bendOsc2OnlyButton"){
                         bendOsc2OnlyButton = addButton (x, y,  w, h, ownerFilter, BENDOSC2, "Osc2");
                         mappingComps["bendOsc2OnlyButton"] = bendOsc2OnlyButton;
@@ -537,7 +528,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         asPlayedAllocButton = addButton (x, y,  w, h, ownerFilter, ASPLAYEDALLOCATION, "APA");
                         mappingComps["asPlayedAllocButton"] = asPlayedAllocButton;
                     }
-                    
+
                     if (name == "filterDetuneKnob"){
                         filterDetuneKnob = addKnob (x, y, d, ownerFilter, FILTERDER, "Flt", 0.2);
                         mappingComps["filterDetuneKnob"] = filterDetuneKnob;
@@ -550,23 +541,20 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         envelopeDetuneKnob = addKnob (x, y, d, ownerFilter, ENVDER, "Env", 0.2);
                         mappingComps["envelopeDetuneKnob"] = envelopeDetuneKnob;
                     }
-                                        
+
                     if (name == "voiceSwitch"){
                         voiceSwitch.reset(addList (x, y, w, h, ownerFilter, VOICE_COUNT, "VoiceCount", "voices"));
                         voiceSwitch->setLookAndFeel(&this->getLookAndFeel());
                         mappingComps["voiceSwitch"] = voiceSwitch.get();
                     }
 
-
                     if (name == "legatoSwitch"){
                         legatoSwitch.reset(addList (x, y, w, h, ownerFilter, LEGATOMODE, "Legato", "legato"));
-                       
+
                         legatoSwitch->setLookAndFeel(&this->getLookAndFeel());
                         mappingComps["legatoSwitch"] = legatoSwitch.get();
                     }
 
-
-                    
                     if (name == "menu")
                     {
                         ImageButton *img = addMenuButton (x, y, d, "menu");
@@ -585,12 +573,11 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                         }
                     }
                     */
-                    
+
                     //DBG(" Name: " << name << " X: " <<x <<" Y: "<<y);
                 }
             }
         }
-
 
         presetBar.reset(new PresetBar(*this));
         addAndMakeVisible(*presetBar);
@@ -606,7 +593,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
                                   i == processor.getCurrentProgram());
             }
             int result = menu.showAt (Rectangle<int> (pos.getX(), pos.getY(), 1, 1));
-        
+
             if (result >= (progStart + 1) && result <= (progStart + processor.getNumPrograms())){
                 result -= 1;
                 result -= progStart;
@@ -615,7 +602,7 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
         };
         resized();
     }
-    
+
     // Prepare data
     if (voiceSwitch)
     {
@@ -623,11 +610,11 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
         {
             voiceSwitch->addChoice (String (i));
         }
-        
+
         auto voiceOption = ownerFilter.getPluginState().getParameter (ownerFilter.getEngineParameterId (VOICE_COUNT))->getValue();
         voiceSwitch->setValue (voiceOption, dontSendNotification);
     }
-    
+
     if (legatoSwitch)
     {
         legatoSwitch->addChoice ("Keep All");
@@ -637,11 +624,11 @@ void ObxdAudioProcessorEditor::loadSkin (ObxdAudioProcessor& ownerFilter)
         auto legatoOption = ownerFilter.getPluginState().getParameter (ownerFilter.getEngineParameterId (LEGATOMODE))->getValue();
         legatoSwitch->setValue (legatoOption, dontSendNotification);
     }
-    
+
     createMenu();
 
     ownerFilter.addChangeListener (this);
-    
+
     scaleFactorChanged();
     repaint();
 }
@@ -667,7 +654,7 @@ void ObxdAudioProcessorEditor::scaleFactorChanged()
         {
             object->setScaleFactor(scaleFactor, highResolutionDisplay);
         }
-        
+
         // update look and feel
         CustomLookAndFeel* laf =
             dynamic_cast<CustomLookAndFeel*>(&getChildComponent(i)->getLookAndFeel());
@@ -676,22 +663,19 @@ void ObxdAudioProcessorEditor::scaleFactorChanged()
             laf->setScaleFactor(scaleFactor, highResolutionDisplay);
         }
     }
-    
-    
+
     // redraw everything
     backgroundImage = getScaledImageFromCache("main", scaleFactor, highResolutionDisplay);
 
     int width = backgroundImage.getWidth();
     int height = backgroundImage.getHeight();
-    
-    
+
     if (!highResolutionDisplay)
     {
         if (scaleFactor == 1.5f)
         {
             width = roundFloatToInt(width * 0.75f);
             height = roundFloatToInt(height * 0.75f);
-            
         }
         else if (scaleFactor == 2.0f)
         {
@@ -708,7 +692,6 @@ void ObxdAudioProcessorEditor::scaleFactorChanged()
         {
             width = roundFloatToInt(width * (0.25f + 0.125f));
             height = roundFloatToInt(height * (0.25f + 0.125f));
-            
         }
         else if (scaleFactor == 2.0f) //4x images =>200x
         {
@@ -724,7 +707,6 @@ void ObxdAudioProcessorEditor::scaleFactorChanged()
     } else
         setSize(width, height);
 }
-
 
 void ObxdAudioProcessorEditor::placeLabel (int x, int y, String text)
 {
@@ -747,24 +729,21 @@ ButtonList* ObxdAudioProcessorEditor::addList (int x, int y, int width, int heig
     buttonListAttachments.add (new ButtonList::ButtonListAttachment (filter.getPluginState(),
                                                                      filter.getEngineParameterId (parameter),
                                                                      *bl));
-    
+
 	bl->setBounds (x, y, width, height);
 	addAndMakeVisible (bl);
-    
-	return bl;
 
+	return bl;
 }
 
 Knob* ObxdAudioProcessorEditor::addKnob (int x, int y, int d, ObxdAudioProcessor& filter, int parameter, String /*name*/, float defval)
 {
-
     Knob* knob = new Knob ("knob", 48, &processor);
-
 
     knobAttachments.add (new Knob::KnobAttachment (filter.getPluginState(),
                                                    filter.getEngineParameterId (parameter),
                                                    *knob));
-    
+
 	knob->setSliderStyle (Slider::RotaryVerticalDrag);
 	knob->setTextBoxStyle (knob->NoTextBox, true, 0, 0);
 	knob->setRange (0, 1);
@@ -773,10 +752,9 @@ Knob* ObxdAudioProcessorEditor::addKnob (int x, int y, int d, ObxdAudioProcessor
 	knob->setDoubleClickReturnValue (true, defval, ModifierKeys::noModifiers);
     knob->setValue (filter.getPluginState().getParameter (filter.getEngineParameterId (parameter))->getValue());
     addAndMakeVisible (knob);
-    
+
 	return knob;
 }
-
 
 void ObxdAudioProcessorEditor::clean()
 {
@@ -798,9 +776,9 @@ TooglableButton* ObxdAudioProcessorEditor::addButton (int x, int y, int w, int h
 	button->setButtonText (name);
     button->setToggleState(filter.getPluginState().getParameter (filter.getEngineParameterId (parameter))->getValue(),
                       dontSendNotification);
-    
+
     addAndMakeVisible (button);
-    
+
 	return button;
 }
 
@@ -814,7 +792,7 @@ void ObxdAudioProcessorEditor::actionListenerCallback(const String& message)
             if (auto* knob = dynamic_cast<Knob*>(mappingComps[parameter]))
             {
                 knob->setValue(knob->getDoubleClickReturnValue());
-            } 
+            }
         }
     }
 }
@@ -828,11 +806,9 @@ Rectangle<int> ObxdAudioProcessorEditor::transformBounds(int x, int y, int w, in
 }
 ImageButton* ObxdAudioProcessorEditor::addMenuButton (int x, int y, int d, String imgName)
 {
-    
     ImageMenu* imageButton = new ImageMenu(imgName, &processor);
     imageButtons.add (imageButton);
     imageButton->setBounds (x, y, d, d);
-    
 
     imageButton->onClick = [this](){
         ImageButton *imageButton = this->imageButtons[0];
@@ -858,7 +834,6 @@ void ObxdAudioProcessorEditor::rebuildComponents (ObxdAudioProcessor& ownerFilte
 
 	ownerFilter.addChangeListener (this);
 	repaint();
-    
 }
 
 void ObxdAudioProcessorEditor::createMenu ()
@@ -888,59 +863,57 @@ void ObxdAudioProcessorEditor::createMenu ()
     skins = processor.getSkinFiles();
     banks = processor.getBankFiles();
     {
-        
         fileMenu.addItem(static_cast<int>(MenuAction::ImportPreset),
                      "Import Preset...",
                      true,
                      false);
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::ImportBank),
                      "Import Bank...",
                      true,
                      false);
-        
+
         fileMenu.addSeparator();
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::ExportPreset),
                      "Export Preset...",
                      true,
                      false);
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::ExportBank),
                      "Export Bank...",
                      true,
                      false);
 
         fileMenu.addSeparator();
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::NewPreset),
                      "New Preset...",
                      true,//enableNewPresetOption,
                      false);
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::RenamePreset),
                          "Rename Preset...",
                          true,
                          false);
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::SavePreset),
                      "Save Preset...",
                      true,
                      false);
-        
+
         fileMenu.addItem(static_cast<int>(MenuAction::DeletePreset),
                      "Delete Preset...",
                      true,
                      false);
-        
 
 		fileMenu.addSeparator();
-		
+
 		fileMenu.addItem(static_cast<int>(MenuAction::CopyPreset),
 					 "Copy Preset...",
 					 true,
 					 false);
-		
+
 		fileMenu.addItem(static_cast<int>(MenuAction::PastePreset),
 					 "Paste Preset...",
 					 enablePasteOption,
@@ -954,7 +927,7 @@ void ObxdAudioProcessorEditor::createMenu ()
         */
         menu->addSubMenu("File", fileMenu);
     }
-    
+
     {
         for (int i = 0; i < processor.getNumPrograms(); ++i)
         {
@@ -963,15 +936,15 @@ void ObxdAudioProcessorEditor::createMenu ()
                               true,
                               i == processor.getCurrentProgram());
         }
-        
+
         menu->addSubMenu("Programs", progMenu);
     }
 
     menu->addItem(progStart + 1000, "Preset Bar", true, processor.showPresetBar);
-    
+
     {
         const String currentBank = processor.getCurrentBankFile().getFileName();
-        
+
         for (int i = 0; i < banks.size(); ++i)
         {
             const File bank = banks.getUnchecked (i);
@@ -980,11 +953,10 @@ void ObxdAudioProcessorEditor::createMenu ()
                               true,
                               bank.getFileName() == currentBank);
         }
-        
+
         menu->addSubMenu ("Banks", bankMenu);
     }
 
-    
     {
         for (int i = 0; i < skins.size(); ++i)
         {
@@ -994,7 +966,7 @@ void ObxdAudioProcessorEditor::createMenu ()
                               true,
                               skin.getFileName() == skinFolder.getFileName());
         }
-        
+
         menu->addSubMenu ("Themes", skinMenu);
         // About // menu.addItem(1, String("Release ") +  String(JucePlugin_VersionString).dropLastCharacters(2), false);
     }
@@ -1004,7 +976,7 @@ void ObxdAudioProcessorEditor::createMenu ()
     createMidi(menuMidiNum, midiMenu);
     menu->addSubMenu ("MIDI", midiMenu);
     popupMenus.add (menu);
-    
+
     PopupMenu scaleMenu;
     menuScaleNum =progStart +2000 + 3000;
     scaleMenu.addItem(menuScaleNum, "1x", true, getScaleFactor() == 1.0f);
@@ -1055,9 +1027,9 @@ void ObxdAudioProcessorEditor::createMidi(int menuNo, PopupMenu &menuMidi) {
         }
         midiFiles.add(default_file.getFullPathName());
     }
-    
+
     File custom_file = midi_dir.getChildFile("Custom.xml");
-    
+
     if(custom_file.exists()){
          if (processor.currentMidiPath != custom_file.getFullPathName()){
              menuMidi.addItem(menuNo++, custom_file.getFileNameWithoutExtension(), true, false);
@@ -1066,16 +1038,16 @@ void ObxdAudioProcessorEditor::createMidi(int menuNo, PopupMenu &menuMidi) {
          }
         midiFiles.add(custom_file.getFullPathName());
     }
-    
+
     DirectoryIterator iter (midi_dir, true, "*.xml");
     StringArray list;
     while (iter.next())
     {
         list.add(iter.getFile().getFullPathName());
     }
-    
+
     list.sort(true);
-    
+
     for (int i =0; i < list.size() ; i ++){
         File f (list[i]);
         if (f.getFileNameWithoutExtension() != "Default" && f.getFileNameWithoutExtension() != "Custom" && f.getFileNameWithoutExtension() != "Config") {
@@ -1093,15 +1065,15 @@ void ObxdAudioProcessorEditor::resultFromMenu (const Point<int> pos)
 {
     createMenu();
     int result = popupMenus[0]->showAt (Rectangle<int> (pos.getX(), pos.getY(), 1, 1));
-    
+
     if (result >= (skinStart + 1) && result <= (skinStart + skins.size()))
     {
         result -= 1;
         result -= skinStart;
-        
+
         const File newSkinFolder = skins.getUnchecked (result);
         processor.setCurrentSkinFolder (newSkinFolder.getFileName());
-        
+
         //rebuildComponents (processor);
         clean();
         loadSkin (processor);
@@ -1110,7 +1082,7 @@ void ObxdAudioProcessorEditor::resultFromMenu (const Point<int> pos)
     {
         result -= 1;
         result -= bankStart;
-        
+
         const File bankFile = banks.getUnchecked (result);
         processor.loadFromFXBFile (bankFile);
         //clean();
@@ -1133,7 +1105,6 @@ void ObxdAudioProcessorEditor::resultFromMenu (const Point<int> pos)
         updatePresetBar(true);
     }
     else if (result >= menuScaleNum){
-        
         if (result ==menuScaleNum){
             ScalableComponent::setScaleFactor(1.0f, isHighResolutionDisplay());
             processor.setGuiSize(1);
@@ -1152,14 +1123,14 @@ void ObxdAudioProcessorEditor::resultFromMenu (const Point<int> pos)
         }
     }
     else if (result >= menuMidiNum){
-        unsigned int selected_idx = result - menuMidiNum;
+        int selected_idx = result - menuMidiNum;
         if (selected_idx >= 0 && selected_idx < midiFiles.size()){
             File f(midiFiles[selected_idx]);
             if (f.exists()) {
                 processor.currentMidiPath = midiFiles[selected_idx];
                 processor.bindings.loadFile(f);
                 processor.updateConfig();
-                
+
                 //createMenu();
             }
         }
@@ -1168,7 +1139,7 @@ void ObxdAudioProcessorEditor::resultFromMenu (const Point<int> pos)
 
 void ObxdAudioProcessorEditor::updatePresetBar(bool resize){
     DBG(" H: " << getHeight() <<" W:" <<getWidth() << " CW:"<<presetBar->getWidth() << " CH" <<presetBar->getHeight() << " CX:" <<presetBar->getX()  << " CY: " <<presetBar->getY());
-    
+
     if (processor.getShowPresetBar()) {
         if (resize) {
             this->setSize(this->getWidth(), this->getHeight() + presetBar->getHeight());
@@ -1186,17 +1157,15 @@ void ObxdAudioProcessorEditor::updatePresetBar(bool resize){
 }
 
 void ObxdAudioProcessorEditor::MenuActionCallback(int action){
-    
-    
     if (action == MenuAction::ImportBank)
     {
         fileChooser = std::make_unique<juce::FileChooser>("Import Bank (*.fxb)", juce::File(), "*.fxb", true);
-        
+
         if (fileChooser->browseForFileToOpen()) {
             File result = fileChooser->getResult();
             auto name = result.getFileName().replace("%20", " ");
             auto file = processor.getBanksFolder().getChildFile(name);
-            
+
             if (result == file || result.copyFileTo(file)){
                 processor.loadFromFXBFile(file);
                 processor.scanAndUpdateBanks();
@@ -1204,7 +1173,7 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
             }
         }
     };
-    
+
     if (action == MenuAction::ExportBank)
     {
         auto file = processor.getDocumentFolder().getChildFile("Banks");
@@ -1212,24 +1181,22 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
         if(myChooser.browseForFileToSave(true))
         {
             File result = myChooser.getResult();
-            
+
             String temp = result.getFullPathName();
             if (!temp.endsWith(".fxb")) {
                 temp += ".fxb";
             }
             processor.saveBank(File(temp));
-            
         }
     };
-    
+
     if (action == MenuAction::DeleteBank)
     {
         if(NativeMessageBox::showOkCancelBox(AlertWindow::NoIcon, "Delete Bank", "Delete current bank: " + processor.currentBank + "?")){
             processor.deleteBank();
         }
     }
-    
-    
+
     if (action == MenuAction::SavePreset)
     {
         auto presetName = processor.currentPreset;
@@ -1241,14 +1208,14 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
         processor.savePreset();
         processor.saveBank();
     }
-    
+
     if (action == MenuAction::NewPreset)
     {
         setPresetNameWindow = std::make_unique<SetPresetNameWindow>();
         //preventBackgroundClick();
         addAndMakeVisible(setPresetNameWindow.get());
         resized();
-       
+
         auto callback = [this](int i, juce::String name)
         {
             if (i)
@@ -1263,13 +1230,13 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
             setPresetNameWindow.reset();
             //preventBackgroundClickComponent.reset();
         };
-        
+
         setPresetNameWindow->callback = callback;
         setPresetNameWindow->grabTextEditorFocus();
-        
+
         return;
     }
-    
+
     if (action == MenuAction::RenamePreset)
     {
         setPresetNameWindow = std::make_unique<SetPresetNameWindow>();
@@ -1277,7 +1244,7 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
         setPresetNameWindow->setText(processor.getProgramName(processor.getCurrentProgram()));
         addAndMakeVisible(setPresetNameWindow.get());
         resized();
-       
+
         auto callback = [this](int i, juce::String name)
         {
             if (i)
@@ -1292,13 +1259,13 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
             setPresetNameWindow.reset();
             //preventBackgroundClickComponent.reset();
         };
-        
+
         setPresetNameWindow->callback = callback;
         setPresetNameWindow->grabTextEditorFocus();
-        
+
         return;
     }
-    
+
     if (action == MenuAction::DeletePreset)
     {
         if(NativeMessageBox::showOkCancelBox(AlertWindow::NoIcon, "Delete Preset", "Delete current preset " + processor.currentPreset + "?")){
@@ -1307,7 +1274,6 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
         }
         return;
     }
-    
 
     if (action == MenuAction::ImportPreset)
     {
@@ -1325,22 +1291,20 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
             //}
         }
     };
-    
+
     if (action == MenuAction::ExportPreset)
     {
-        
         auto file = processor.getPresetsFolder();
         FileChooser myChooser ("Export Preset (*.fxp)", file, "*.fxp", true);
         if(myChooser.browseForFileToSave(true))
         {
             File result = myChooser.getResult();
-            
+
             String temp = result.getFullPathName();
             if (!temp.endsWith(".fxp")) {
                 temp += ".fxp";
             }
             processor.savePreset(File(temp));
-            
         }
     };
 
@@ -1377,7 +1341,7 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
 
         // Serialize the Preset, produces the same data as an export but into memory instead of a file.
         processor.serializePreset(serializedData);
-        
+
         // Place the data onto the clipboard
         SystemClipboard::copyTextToClipboard(serializedData.toBase64Encoding());
     }
@@ -1392,18 +1356,13 @@ void ObxdAudioProcessorEditor::MenuActionCallback(int action){
 
         // Load the data
         processor.loadFromMemoryBlock(memoryBlock);	//loadPreset(memoryBlock);
-        
     }
 #endif
 }
 
-
-
 void ObxdAudioProcessorEditor::deleteBank()
 {
 }
-
-
 
 void ObxdAudioProcessorEditor::nextProgram() {
     int cur = processor.getCurrentProgram() +  1;
@@ -1411,7 +1370,7 @@ void ObxdAudioProcessorEditor::nextProgram() {
         cur = 0;
     }
     processor.setCurrentProgram (cur, false);
-    
+
     needNotifytoHost = true;
     countTimer = 0;
 // Define for win and mac?
@@ -1424,10 +1383,10 @@ void ObxdAudioProcessorEditor::prevProgram() {
         cur = processor.getNumPrograms() - 1;
     }
     processor.setCurrentProgram (cur, false);
-    
+
     needNotifytoHost = true;
     countTimer = 0;
-    
+
     //clean();
     //loadSkin (processor);
 }
@@ -1435,7 +1394,7 @@ void ObxdAudioProcessorEditor::buttonClicked (Button* b)
 {
     /*
     auto imageButton = dynamic_cast<ImageButton*> (b);
-    
+
     if (imageButton == imageButtons[0])
     {
         auto x   = imageButton->getScreenX();
@@ -1445,8 +1404,7 @@ void ObxdAudioProcessorEditor::buttonClicked (Button* b)
 
         resultFromMenu (pos);
     }*/
-    
-    
+
     auto toggleButton = dynamic_cast<TooglableButton*> (b);
     if (toggleButton == midiUnlearnButton){
         if (midiUnlearnButton->getToggleState()){
@@ -1456,7 +1414,6 @@ void ObxdAudioProcessorEditor::buttonClicked (Button* b)
             processor.sendChangeMessage();
         }
     }
-    
 }
 
 //==============================================================================
@@ -1471,18 +1428,18 @@ void ObxdAudioProcessorEditor::updateFromHost() {
     {
         toggleAttachments[i]->updateToSlider();
     }*/
-    
+
     for (int i = 0; i < buttonListAttachments.size(); ++i)
     {
         buttonListAttachments[i]->updateToSlider();
     }
-    
+
     // Set to unlearn to false
     //if ( midiUnlearnButton && midiUnlearnButton->getToggleState()) {
     //    Thread::sleep(500);
     //    midiUnlearnButton->setToggleState(false, NotificationType:: sendNotification);
     //}
-    
+
     repaint();
 }
 void ObxdAudioProcessorEditor::changeListenerCallback (ChangeBroadcaster* source)
@@ -1498,7 +1455,6 @@ void ObxdAudioProcessorEditor::mouseUp (const MouseEvent& e)
 	}
 }
 
-
 void ObxdAudioProcessorEditor::handleAsyncUpdate() {
     scaleFactorChanged();
     repaint();
@@ -1506,7 +1462,6 @@ void ObxdAudioProcessorEditor::handleAsyncUpdate() {
 
 void ObxdAudioProcessorEditor::paint(Graphics& g)
 {
-    
     const float newPhysicalPixelScaleFactor =
         g.getInternalContext().getPhysicalPixelScaleFactor();
 
@@ -1517,7 +1472,7 @@ void ObxdAudioProcessorEditor::paint(Graphics& g)
     }
 
 	g.fillAll (Colours::black);
-    
+
     // background gui
     if(processor.showPresetBar){
         g.drawImage(backgroundImage,
@@ -1528,19 +1483,18 @@ void ObxdAudioProcessorEditor::paint(Graphics& g)
                     0, 0, getWidth(), getHeight(),
                     0, 0, backgroundImage.getWidth(), backgroundImage.getHeight());
     }
-    
+
     /*
 #if JUCE_WINDOWS || JUCE_LINUX
 	const File mainFile(skinFolder.getChildFile("main.png"));
 #else
     const File mainFile(skinFolder.getChildFile("main@2x.png"));
 #endif
-    
+
     if (!notLoadSkin && skinFolder.exists() && mainFile.exists())
 	{
-        
         const Image image = ImageCache::getFromFile(mainFile);
-        
+
 #if JUCE_WINDOWS || JUCE_LINUX
         g.drawImage (image,
                      0, 0, image.getWidth(), image.getHeight(),
@@ -1550,22 +1504,19 @@ void ObxdAudioProcessorEditor::paint(Graphics& g)
                      0, 0, image.getWidth()/2, image.getHeight()/2,
                      0, 0, image.getWidth(), image.getHeight());
 #endif
-
 	}
 	else
 	{
 		const Image image = ImageCache::getFromMemory(BinaryData::main_png, BinaryData::main_pngSize);
-        
+
         // g.setImageResamplingQuality(Graphics::ResamplingQuality::highResamplingQuality);
-        
+
 		g.drawImage (image,
 					 0, 0, image.getWidth(), image.getHeight(),
 					 0, 0, image.getWidth(), image.getHeight());
 	}
      */
-
 }
-
 
 bool ObxdAudioProcessorEditor::isInterestedInFileDrag(const StringArray& files)
 {
@@ -1581,7 +1532,7 @@ bool ObxdAudioProcessorEditor::isInterestedInFileDrag(const StringArray& files)
         for (int q = 0; q < files.size(); q++) {
             File file = File(files[q]);
             String ext = file.getFileExtension().toLowerCase();
-            
+
             if (ext == ".fxb" || ext == ".fxp") {
                 return true;
             }
@@ -1595,20 +1546,20 @@ void ObxdAudioProcessorEditor::filesDropped(const StringArray& files, int x, int
     if (files.size() == 1) {
         File file = File(files[0]);
         String ext = file.getFileExtension().toLowerCase();
-        
+
         if (ext == ".fxp") {
             processor.loadPreset(file);
             //createMenu();
         } else if (ext == ".fxb") {
             auto name = file.getFileName().replace("%20", " ");
             auto result = processor.getBanksFolder().getChildFile(name);
-            
+
             if (file.copyFileTo(result)){
                 processor.loadFromFXBFile(result);
                 processor.scanAndUpdateBanks();
                 //createMenu();
             }
-        } 
+        }
     } else {
         int i = processor.getCurrentProgram();
 
@@ -1641,6 +1592,6 @@ bool ObxdAudioProcessorEditor::keyPressed(const KeyPress & press) {
         prevProgram();
         return false; // return true when the keypress was handled
     }
-    
+
     return false; // return false if you don't handle the keypress
 }*/

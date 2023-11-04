@@ -22,49 +22,24 @@
     ==============================================================================
  */
 #pragma once
-#include "SynthEngine.h"
-//Always feed first then get delayed sample!
-#define DEMAX 64
-template<unsigned int DM> class DelayLine
+
+template <typename T, int Delay>
+class DelayLine
 {
-private:
-    float dl[DEMAX];
-    int iidx;
+    static constexpr int Capacity = Delay * 2;
+    static constexpr int MASK = Capacity - 1;
+
 public:
-    DelayLine()
+    void clear() { buffer.fill(T()); }
+
+    T tick(T v)
     {
-        iidx = 0;
-        zeromem(dl, sizeof(float) * DEMAX);
-        //jassert(DM > DMAX);
+        buffer[pos] = v;
+        pos = (pos - 1) & MASK;
+        return buffer[(pos + Delay) & MASK];
     }
-    inline float feedReturn(float sm)
-    {
-        dl[iidx] = sm;
-        iidx--;
-        iidx = (iidx & (DEMAX - 1));
-        return dl[(iidx + DM) & (DEMAX - 1)];
-    }
-    inline void fillZeroes()
-    {
-        zeromem(dl, DEMAX * sizeof(float));
-    }
-};
-template<unsigned int DM> class DelayLineBoolean
-{
+
 private:
-    bool dl[DEMAX];
-    int iidx;
-public:
-    DelayLineBoolean()
-    {
-        iidx = 0;
-        zeromem(dl, sizeof(bool) * DEMAX);
-    }
-    inline float feedReturn(bool sm)
-    {
-        dl[iidx] = sm;
-        iidx--;
-        iidx = (iidx & (DEMAX - 1));
-        return dl[(iidx + DM) & (DEMAX - 1)];
-    }
+    std::array<T, Capacity> buffer {};
+    int pos = 0;
 };

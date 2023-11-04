@@ -39,10 +39,10 @@ struct mtsclientglobal
         for (int i=0;i<16;i++) multi_channel_esp_retuning[i]=GetMultiChannelTuning?GetMultiChannelTuning(static_cast<char>(i)):0;
     }
     virtual inline bool isOnline() const {return esp_retuning && HasMaster && HasMaster();}
-    
+
     mts_void RegisterClient,DeregisterClient;mts_bool HasMaster;mts_bcc ShouldFilterNote,ShouldFilterNoteMultiChannel;mts_cd GetTuning;mts_cdc GetMultiChannelTuning;mts_bc UseMultiChannelTuning;mts_pcc GetScaleName; // Interface to lib
     double iet[128];const double *esp_retuning;const double *multi_channel_esp_retuning[16]; // tuning tables
-    
+
 #ifdef MTS_ESP_WIN
     virtual void load_lib()
 	{
@@ -63,7 +63,7 @@ struct mtsclientglobal
                 CoTaskMemFree(cf);
                 buffer[MAX_PATH-1]=L'\0';
                 const WCHAR *libpath=L"\\MTS-ESP\\LIBMTS.dll";
-                DWORD cfLen=wcslen(buffer);
+                DWORD cfLen = (DWORD) wcslen(buffer);
                 wcsncat(buffer,libpath,MAX_PATH-cfLen-1);
                 if (!(handle=LoadLibraryW(buffer))) return;
             }
@@ -342,7 +342,7 @@ struct MTSClient
         retuning[note]=440.*pow(2.,((retuneNote+detune)-69.)/12.);
     }
     const char *getScaleName() {return global.isOnline() && global.GetScaleName?global.GetScaleName():tuningName;}
-    
+
     enum eSysexState {eIgnoring=0,eMatchingSysex,eSysexValid,eMatchingMTS,eMatchingBank,eMatchingProg,eMatchingChannel,eTuningName,eNumTunings,eTuningData,eCheckSum};
     enum eMTSFormat {eRequest=0,eBulk,eSingle,eScaleOctOneByte,eScaleOctTwoByte,eScaleOctOneByteExt,eScaleOctTwoByteExt};
 
@@ -387,4 +387,3 @@ char MTS_FrequencyToNoteAndChannel(MTSClient *c,double freq,char *midichannel)  
 const char *MTS_GetScaleName(MTSClient *c)                                      {return c?c->getScaleName():"";}
 void MTS_ParseMIDIDataU(MTSClient *c,const unsigned char *buffer,int len)       {if (c) c->parseMIDIData(buffer,len);}
 void MTS_ParseMIDIData(MTSClient *c,const char *buffer,int len)                 {if (c) c->parseMIDIData(reinterpret_cast<const unsigned char*>(buffer),len);}
-
