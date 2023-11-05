@@ -31,8 +31,8 @@ class PulseOsc
     static constexpr int MASK = N - 1;
 
 public:
-    void setDecimation() { blepPTR = blepd2; }
-    void removeDecimation() { blepPTR = blep; }
+    void setDecimation() {}
+    void removeDecimation() {}
 
     float tick(float x, float pulseWidth)
     {
@@ -156,7 +156,7 @@ private:
 
     DelayLine<float, Samples> delay;
     std::array<float, N> blepBuffer {};
-    float const * blepPTR = blep;
+    double const * blepPTR = blep2;
     int blepPos = 0;
     bool pw1t = false;
 };

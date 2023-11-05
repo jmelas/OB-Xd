@@ -33,14 +33,14 @@ class TriangleOsc
 public:
     void setDecimation()
     {
-        blepPTR = blepd2;
-        blampPTR = blampd2;
+        //blepPTR = blepd2;
+        //blampPTR = blampd2;
     }
 
     void removeDecimation()
     {
-        blepPTR = blep;
-        blampPTR = blamp;
+        //blepPTR = blep;
+        //blampPTR = blamp;
     }
 
     float tick(float x)
@@ -161,8 +161,8 @@ private:
 
     DelayLine<float, Samples> delay;
     std::array<float, N> blepBuffer {};
-    float const * blepPTR = blep;
-    float const * blampPTR = blamp;
+    double const * blepPTR = blep2;
+    double const * blampPTR = blamp2;
     int blepPos = 0;
     bool fall = false;
 };
