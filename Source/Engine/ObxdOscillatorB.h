@@ -43,7 +43,7 @@ private:
     float osc1Factor;
     float osc2Factor;
 
-    float pw1w = 0, pw2w = 0;
+    float pw1prev = 0, pw2prev = 0;
 
     DelayLine<float, Samples> xmodd;
     DelayLine<bool, Samples> syncd;
@@ -63,7 +63,7 @@ public:
     float osc1p = 10, osc2p = 10;
 
     float pto1 = 0, pto2 = 0;
-    float pw1 = 0, pw2 = 0;
+    float pw1mod = 0, pw2mod = 0;
 
     float pulseWidth = 0;
     bool hardSync = false;
@@ -123,10 +123,10 @@ public:
         x1 += fs;
         hsfrac = 0;
         float osc1mix = 0.0f;
-        float pwcalc = jlimit<float>(0.1f, 1.0f, (pulseWidth + pw1) * 0.5f + 0.5f);
+        float pwcalc = jlimit<float>(0.1f, 1.0f, (pulseWidth + pw1mod) * 0.5f + 0.5f);
 
         if (osc1Pul)
-            o1p.processMaster(x1, fs, pwcalc, pw1w);
+            o1p.processMaster(x1, fs, pwcalc, pw1prev);
         if (osc1Saw)
             o1s.processMaster(x1, fs);
         else if (!osc1Pul)
@@ -139,7 +139,7 @@ public:
             hsr = true;
         }
 
-        pw1w = pwcalc;
+        pw1prev = pwcalc;
 
         hsr &= hardSync;
         //Delaying our hard sync gate signal and frac
@@ -160,14 +160,14 @@ public:
 
         fs = jmin(pitch2 * (sampleRateInv), 0.45f);
 
-        pwcalc = jlimit<float>(0.1f, 1.0f, (pulseWidth + pw2) * 0.5f + 0.5f);
+        pwcalc = jlimit<float>(0.1f, 1.0f, (pulseWidth + pw2mod) * 0.5f + 0.5f);
 
         float osc2mix = 0.0f;
 
         x2 += fs;
 
         if (osc2Pul)
-            o2p.processSlave(x2, fs, hsr, hsfrac, pwcalc, pw2w);
+            o2p.processSlave(x2, fs, hsr, hsfrac, pwcalc, pw2prev);
         if (osc2Saw)
             o2s.processSlave(x2, fs, hsr, hsfrac);
         else if (!osc2Pul)
@@ -176,7 +176,7 @@ public:
         if (x2 >= 1.0f)
             x2 -= 1.0;
 
-        pw2w = pwcalc;
+        pw2prev = pwcalc;
         //On hard sync reset slave phase is affected that way
         if (hsr)
         {

@@ -205,8 +205,8 @@ public:
             cutoffcalc = jmin(cutoffcalc, 19000.0f);
 
         //PW modulation
-        osc.pw1 = (lfopw1 ? (lfoIn * lfoa2) : 0) + (pwEnvBoth ? (pwenvmod * envm) : 0);
-        osc.pw2 = (lfopw2 ? (lfoIn * lfoa2) : 0) + pwenvmod * envm + pwOfs;
+        osc.pw1mod = (lfopw1 ? (lfoIn * lfoa2) : 0) + (pwEnvBoth ? (pwenvmod * envm) : 0);
+        osc.pw2mod = (lfopw2 ? (lfoIn * lfoa2) : 0) + pwenvmod * envm + pwOfs;
 
         //Pitch modulation
         osc.pto1 = (!pitchWheelOsc2Only ? (pitchWheel * pitchWheelAmt) : 0) + (lfoo1 ? (lfoIn * lfoa1) : 0) + (pitchModBoth ? (envpitchmod * envm) : 0) + lfoVibratoIn;
